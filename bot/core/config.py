@@ -1,6 +1,6 @@
 from pydantic import (
-    SecretStr,
     BaseModel,
+    SecretStr,
 )
 from pydantic_settings import (
     BaseSettings,
