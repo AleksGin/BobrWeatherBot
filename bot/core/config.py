@@ -12,6 +12,10 @@ class BotConfig(BaseModel):
     bot_token: SecretStr
 
 
+class WeatherConfig(BaseModel):
+    weather_app_token: SecretStr
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=(".env.template", ".env"),
@@ -19,6 +23,7 @@ class Settings(BaseSettings):
         env_nested_delimiter="__",
     )
     bot_config: BotConfig
+    weather_config: WeatherConfig
 
 
 settings = Settings()
