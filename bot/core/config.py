@@ -14,6 +14,7 @@ class BotConfig(BaseModel):
 
 class WeatherConfig(BaseModel):
     weather_app_token: SecretStr
+    weather_url: SecretStr
 
 
 class Settings(BaseSettings):
