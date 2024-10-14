@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 
+import redis.asyncio as redis
 from aiogram import (
     Bot,
     Dispatcher,
@@ -12,7 +13,10 @@ from aiohttp import ClientSession
 from core import settings
 from handlers.handlers import router as handlers_router
 from middlewares import RepoMiddleware
-from repo.weather import WeatherRepo
+from repository import (
+    CacheRepository,
+    WeatherRepository,
+)
 from services import WeatherService
 
 
@@ -23,12 +27,20 @@ async def main() -> None:
             default=DefaultBotProperties(parse_mode=ParseMode.HTML),
         )
 
-        weather_repo = WeatherRepo(
+        weather_repo = WeatherRepository(
             http_session=session,
             api_key=settings.weather_config.weather_api_key.get_secret_value(),
             url=settings.weather_config.weather_url,
         )
-        weather_service = WeatherService(weather_repo=weather_repo)
+        pool = redis.ConnectionPool.from_url(
+            url=settings.redis_config.redis_url
+        )
+        cache_repo = CacheRepository(pool=pool)
+
+        weather_service = WeatherService(
+            weather_repo=weather_repo,
+            cache_repo=cache_repo,
+        )
 
         dp = Dispatcher()
 
@@ -36,6 +48,7 @@ async def main() -> None:
             RepoMiddleware(
                 weather_repo=weather_repo,
                 weather_service=weather_service,
+                cache_repo=cache_repo,
             )
         )
 
