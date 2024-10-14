@@ -12,9 +12,11 @@ class WeatherRepo:
         params = {
             "q": city_name,
             "appid": self.api_key,
+            "units": "metric", 
+            "lang": "ru"
         }
 
-        url = self.url + f"?q={city_name}&appid={self.api_key}&units=metric"
+        url = self.url + f"?q={city_name}&appid={self.api_key}"
 
         async with self.http_session.get(url=url, params=params) as resp:
             return WeatherResponseBase(**await resp.json())
