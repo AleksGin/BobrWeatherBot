@@ -12,8 +12,8 @@ class WeatherRepo:
         params = {
             "q": city_name,
             "appid": self.api_key,
-            "units": "metric", 
-            "lang": "ru"
+            "units": "metric",
+            "lang": "ru",
         }
 
         url = self.url + f"?q={city_name}&appid={self.api_key}"
