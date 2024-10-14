@@ -1,5 +1,3 @@
-import logging
-
 from aiogram.types import Message
 from core.schemas import WeatherResponseBase
 from core.texts import (
@@ -7,12 +5,20 @@ from core.texts import (
     WeatherIcon,
 )
 from pydantic import ValidationError
-from repo.weather import WeatherRepo
+from repository import (
+    CacheRepository,
+    WeatherRepository,
+)
 
 
 class WeatherService:
-    def __init__(self, weather_repo: WeatherRepo) -> None:
-        self.weather_repo: WeatherRepo = weather_repo
+    def __init__(
+        self,
+        weather_repo: WeatherRepository,
+        cache_repo: CacheRepository,
+    ) -> None:
+        self.weather_repo = weather_repo
+        self.cache_repo = cache_repo
 
     async def welcome_text(self, welcome_text: Message):
         return await welcome_text.answer(Phrases.welcome_text)
@@ -22,6 +28,9 @@ class WeatherService:
             get_weather_info_model = await self.weather_repo.get_weather_info_by_id(
                 city_name=name_of_city
             )
+            check_cache = await self.cache_repo.get_weather_info(city_name=name_of_city)
+            if check_cache:
+                return check_cache
             return await self.__prepare_text(weather_model=get_weather_info_model)
         except ValidationError:
             return Phrases.validation_error.format(name_of_city)
@@ -29,10 +38,9 @@ class WeatherService:
     async def __prepare_text(
         self,
         weather_model: WeatherResponseBase,
-        chat_id: int | None = None,
     ) -> str:
         weather = weather_model.weather[0]
-        return self.__text_for_weather(
+        return await self.__text_for_weather(
             city=weather_model.name,
             temp=weather_model.main.temp,
             feels_like=weather_model.main.feels_like,
@@ -41,7 +49,7 @@ class WeatherService:
             wind=weather_model.wind.speed,
         )
 
-    def __text_for_weather(
+    async def __text_for_weather(
         self,
         city: str,
         temp: float,
@@ -51,7 +59,7 @@ class WeatherService:
         wind: float,
     ) -> str:
         weather_icon = WeatherIcon.weather_icon.get(weather_type_id)
-        return Phrases.information_form.format(
+        info = Phrases.information_form.format(
             city,
             int(temp),
             int(feels_like),
@@ -59,3 +67,8 @@ class WeatherService:
             weather_description.capitalize(),
             int(wind),
         )
+        await self.cache_repo.set_weather_info(
+            city_name=city,
+            info=info,
+        )
+        return info
