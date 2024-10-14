@@ -1,6 +1,6 @@
+from typing import List
+
 from pydantic import BaseModel
-
-
 
 
 class Main(BaseModel):
@@ -10,25 +10,26 @@ class Main(BaseModel):
     temp_max: float
     pressure: int
     humidity: int
-    
+
 
 class Wind(BaseModel):
     speed: float
-    
+
+
+class Weather(BaseModel):
+    id: int
+    description: str
+
 
 class Clouds(BaseModel):
     all: int
 
+
 class WeatherResponseBase(BaseModel):
     main: Main
     wind: Wind
+    weather: List[Weather]
     clouds: Clouds
     name: str
-    
-    
-    
 
-    
-    
-    
-    
+

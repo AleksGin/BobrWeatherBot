@@ -1,10 +1,10 @@
 __all__ = (
     "WeatherResponseBase",
-    "Main",
+    "Weather",
 )
 
 
 from .weather import (
     WeatherResponseBase,
-    Main,
+    Weather,
 )
