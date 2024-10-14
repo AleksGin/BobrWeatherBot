@@ -13,4 +13,6 @@ class CacheRepository:
     async def get_weather_info(self, city_name: str):
         async with Redis.from_pool(connection_pool=self.pool) as redis:
             info = await redis.get(name=city_name)
+            if info is None:
+                return None
             return info.decode("utf-8")
