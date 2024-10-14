@@ -23,6 +23,7 @@ async def get_weather_for_city(
         return await message.answer("Введите название города")
 
     info = await weather_service.get_info_about_city(
+        chat_id=message.chat.id,
         name_of_city=message.text.capitalize(),
     )
     return await message.answer(info)

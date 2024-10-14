@@ -23,21 +23,26 @@ class WeatherService:
     async def welcome_text(self, welcome_text: Message):
         return await welcome_text.answer(Phrases.welcome_text)
 
-    async def get_info_about_city(self, name_of_city: str) -> str:
+    async def get_info_about_city(self, chat_id: int, name_of_city: str) -> str:
         try:
             get_weather_info_model = await self.weather_repo.get_weather_info_by_id(
                 city_name=name_of_city
             )
-            check_cache = await self.cache_repo.get_weather_info(city_name=name_of_city)
+            check_cache = await self.cache_repo.get_weather_info(
+                chat_id=chat_id, city_name=name_of_city
+            )
             if check_cache:
                 return check_cache
-            return await self.__prepare_text(weather_model=get_weather_info_model)
+            return await self.__prepare_text(
+                weather_model=get_weather_info_model, chat_id=chat_id
+            )
         except ValidationError:
             return Phrases.validation_error.format(name_of_city)
 
     async def __prepare_text(
         self,
         weather_model: WeatherResponseBase,
+        chat_id: int,
     ) -> str:
         weather = weather_model.weather[0]
         return await self.__text_for_weather(
@@ -47,6 +52,7 @@ class WeatherService:
             weather_description=weather.description,
             weather_type_id=weather.id,
             wind=weather_model.wind.speed,
+            chat_id=chat_id,
         )
 
     async def __text_for_weather(
@@ -57,8 +63,11 @@ class WeatherService:
         weather_description: str,
         weather_type_id: int,
         wind: float,
+        chat_id: int,
     ) -> str:
-        weather_icon = WeatherIcon.weather_icon.get(weather_type_id)
+        weather_icon = WeatherIcon.weather_icon.get(
+            weather_type_id,
+        )
         info = Phrases.information_form.format(
             city,
             int(temp),
@@ -68,6 +77,7 @@ class WeatherService:
             int(wind),
         )
         await self.cache_repo.set_weather_info(
+            chat_id=chat_id,
             city_name=city,
             info=info,
         )
