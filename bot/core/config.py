@@ -7,6 +7,9 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
+class RedisConfig(BaseModel):
+    redis_url: str
+
 
 class BotConfig(BaseModel):
     bot_token: SecretStr
@@ -25,6 +28,7 @@ class Settings(BaseSettings):
     )
     bot_config: BotConfig
     weather_config: WeatherConfig
+    redis_config: RedisConfig
 
 
 settings = Settings()
